@@ -17,14 +17,11 @@ class ResNet(nn.Module):
         self.layer2 = self._make_residual_layer(16, 32, 2, 1)
         self.layer3 = self._make_residual_layer(32, 64, 2, 2)
         self.layer4 = self._make_residual_layer(64, 128, 2, 2)
-        self.layer5 = self._make_residual_layer(128, 256, 2, 2)
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.fc = nn.Linear(3200, 6)
 
     def forward(self, x):
-        """Forward pass of network."""
-        # print(x.shape)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)

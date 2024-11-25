@@ -267,7 +267,7 @@ class Trainer:
             epoch_idx (int): Current epoch index.
         """
         self.logger.info(
-            f"Epoch {epoch_idx + 1}/{self.num_epochs} - "
+            f"Epoch {epoch_idx + 1}/{self.num_epochs} - \n"
             f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f} - "
             f"Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}"
         )

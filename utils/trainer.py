@@ -127,6 +127,7 @@ class Trainer:
         train_loss = 0.0
         train_correct = 0
         num_train = 0
+        num_train_batches = 0
 
         progress_bar = tqdm.tqdm(
             enumerate(train_loader), total=len(train_loader), desc="Training"
@@ -147,7 +148,7 @@ class Trainer:
 
             # update progress bar
             progress_bar.set_postfix(
-                train_loss=f"{train_loss:.4f}",
+                train_loss=f"{train_loss / num_train_batches:.4f}",
                 train_accuracy=f"{100.0 * train_correct / num_train:.2f}",
             )
 
@@ -175,6 +176,7 @@ class Trainer:
         val_loss = 0.0
         val_correct = 0
         num_val = 0
+        num_val_batches = 0
 
         progress_bar = tqdm.tqdm(
             enumerate(val_loader), total=len(val_loader), desc="Validation"
@@ -187,11 +189,12 @@ class Trainer:
             val_loss += loss.item()
             preds = outputs.argmax(dim=1)
             num_val += targets.size(0)
+            num_val_batches += 1
             val_correct += torch.sum(preds == targets).item()
 
             # update progress bar
             progress_bar.set_postfix(
-                val_loss=f"{val_loss:.4f}",
+                val_loss=f"{val_loss / num_val_batches:.4f}",
                 val_accuracy=f"{100.0 * val_correct / num_val:.2f}",
             )
         val_accuracy = 100.0 * val_correct / num_val

@@ -144,6 +144,7 @@ class Trainer:
             train_loss += loss.item()
             preds = outputs.argmax(dim=1)
             num_train += targets.size(0)
+            num_train_batches += 1
             train_correct += torch.sum(preds == targets).item()
 
             # update progress bar

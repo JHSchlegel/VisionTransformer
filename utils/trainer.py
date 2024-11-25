@@ -112,6 +112,11 @@ class Trainer:
         )
         self.logger = logging.getLogger(__name__)
 
+        # log number of parameters in the model
+        self.logger.info(
+            f"Number of parameters in the model: {sum(p.numel() for p in self.model.parameters() if p.requires_grad)}"
+        )
+
     def train_epoch(
         self, train_loader: torch.utils.data.DataLoader
     ) -> Tuple[float, float]:

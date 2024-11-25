@@ -18,7 +18,7 @@ model:
 training:
   num_epochs: 200 # number of training epochs
   use_early_stopping: True # whether to use early stopping
-  early_stopping_patience: 10 # patience for early stopping
+  early_stopping_patience: 20 # patience for early stopping
   early_stopping_tol: 1e-7 # tolerance for early stopping
   save_model_every: 1 # checkpoint frequency
   use_wandb: True # whether to use Weights & Biases

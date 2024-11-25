@@ -27,7 +27,7 @@ class Trainer:
         criterion: nn.Module,
         optimizer: optim.Optimizer,
         scheduler: _LRScheduler,
-        save_dir: str = "checkpoints",
+        save_dir: str,
         num_epochs: int = 100,
         use_early_stopping: bool = True,
         early_stopping_patience: int = 25,
@@ -46,7 +46,7 @@ class Trainer:
             criterion (nn.Module): Loss function to use.
             optimizer (optim.Optimizer): Optimizer to use.
             scheduler (optim.lr_scheduler): Scheduler to use.
-            save_dir (str, optional): Directory to which results are saved. Defaults to "results".
+            save_dir (str, optional): Directory to which results are saved.
             num_epochs (int, optional): Number of epochs to train. Defaults to 100.
             use_early_stopping (bool, optional): Whether early stopping should be used. Defaults to True.
             early_stopping_patience (int, optional): Patience for early stopping. Defaults to 25.
@@ -75,9 +75,10 @@ class Trainer:
 
         # check whether directories exist; if not create them
         os.makedirs(save_dir, exist_ok=True)
-        os.makedirs(wandb_logging_dir, exist_ok=True)
         os.makedirs(f"{save_dir}/checkpoints", exist_ok=True)
         os.makedirs(f"{save_dir}/plots", exist_ok=True)
+
+        self.save_dir = save_dir
 
         # define if the best model should be saved
         self.best_val_loss: float = float("inf")
@@ -174,7 +175,7 @@ class Trainer:
             val_loss += loss.item()
             preds = outputs.argmax(dim=1)
             num_val += targets.size(0)
-            train_correct += torch.sum(preds == targets).item()
+            val_correct += torch.sum(preds == targets).item()
         val_accuracy = 100.0 * val_correct / num_val
         val_loss /= len(val_loader)
 
@@ -282,15 +283,8 @@ class Trainer:
 
         inputs, targets = next(iter(val_loader))
         inputs, targets = inputs.to(self.device), targets.to(self.device)
-        # preds = torch.argmax(self.model(inputs), dim=1)
-        # # create a grid of images
-        # grid = make_grid(inputs, nrow=5)
-        # plt.figure(figsize=(10, 10))
-        # plt.imshow(grid.permute(1, 2, 0))
-        # plt.axis("off")
-        # plt.title(f"Epoch {epoch_idx} - Ground Truth: {targets} - Predictions: {preds}")
-        # plt.savefig(f"{self.save_dir}/plots/epoch_{epoch_idx}.png")
-        # plt.close()
+
+        inputs, targets = inputs[:num_samples], targets[:num_samples]
 
         # Get model outputs and probabilities
         outputs = self.model(inputs)
@@ -298,11 +292,20 @@ class Trainer:
         top_probs, top_classes = torch.topk(probs, top_k, dim=1)
 
         plt.figure(figsize=(15, 10))
-        for i in range(num_samples):
-            plt.subplot(2, 5, i + 1)
+        num_rows = (
+            num_samples + 4
+        ) // 5  # Calculate rows dynamically for better layout
 
-            # Display image
+        for i in range(num_samples):
+            plt.subplot(
+                num_rows, 5, i + 1
+            )  # Adjust subplot index for 1-based indexing in matplotlib
+
+            # Display the image
             img = inputs[i].cpu().numpy().transpose(1, 2, 0)
+            img = (img - img.min()) / (
+                img.max() - img.min()
+            )  # Normalize image for visualization
             plt.imshow(img)
             plt.axis("off")
 
@@ -315,20 +318,28 @@ class Trainer:
                 pred_class = top_classes[i][j].item()
                 pred_prob = top_probs[i][j].item() * 100
                 is_correct = pred_class == true_class
-                title += f"Top-{j+1}: {pred_class} ({pred_prob:.1f}%){'*' if is_correct else ''}\n"
+                title += f"Top-{j + 1}: {pred_class} ({pred_prob:.1f}%){' ✔' if is_correct else ''}\n"
 
             plt.title(title, fontsize=8)
 
-        plt.tight_layout()
-        plt.suptitle(f"Epoch {epoch_idx} - Model Predictions", fontsize=12)
+        # Adjust layout and add a title for the entire figure
+        plt.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for the suptitle
+        plt.suptitle(f"Epoch {epoch_idx} - Top-{top_k} Model Predictions", fontsize=16)
+
+        # Save the figure
         plt.savefig(f"{self.save_dir}/plots/epoch_{epoch_idx}_predictions.png")
         plt.close()
+
+        self.logger.info(
+            f"Visualized top-{top_k} predictions for {num_samples} samples for epoch {epoch_idx}."
+        )
 
     def train_and_validate(
         self,
         train_loader: torch.utils.data.DataLoader,
         val_loader: torch.utils.data.DataLoader,
         num_samples: int = 10,
+        top_k: int = 5,
     ) -> None:
         """Train and validate the model.
 
@@ -352,15 +363,16 @@ class Trainer:
             if epoch_idx == 0 or (epoch_idx + 1) % self.num_epochs == 0:
                 self._save_checkpoint(epoch_idx)
                 self._visualize_samples(
-                    val_loader, num_samples=num_samples, epoch_idx=epoch_idx
+                    val_loader,
+                    num_samples=num_samples,
+                    epoch_idx=epoch_idx,
+                    top_k=top_k,
                 )
 
             if not isinstance(
                 self.scheduler, (CosineAnnealingLR, CosineAnnealingWarmRestarts)
             ):
                 self.scheduler.step()
-
-            self._visualize_samples(val_loader, num_samples=25, epoch_idx=epoch_idx)
 
             # update progress bar
             progress_bar.set_postfix(

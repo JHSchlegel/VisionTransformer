@@ -20,7 +20,7 @@ training:
   early_stopping_tol: 1e-7 # tolerance for early stopping
   save_model_every: 1 # checkpoint frequency
   use_wandb: True # whether to use Weights & Biases
-  wandb_project: 'vit' # Weights & Biases project name
+  wandb_project: 'resnet' # Weights & Biases project name
   num_samples: 5 # number of samples to visualize
   top_k: 5 # number of top-k predictions to visualize
 

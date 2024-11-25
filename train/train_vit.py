@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 
 sys.path.append("../")
 from models.vit import VisionTransformer
-from utils.data_utils import prepare_cifar_100, prepare_cifar_10
+from utils.data_utils import prepare_cifar_100, prepare_cifar_10, prepare_food_101
 from utils.trainer import Trainer
 
 
@@ -29,6 +29,7 @@ def main(config: DictConfig):
             config.data.val_batch_size,
             config.data.test_batch_size,
         )
+        num_classes = 10
     elif config.data.dataset == "cifar100":
         train_loader, val_loader, test_loader = prepare_cifar_100(
             config.data.val_perc_size,
@@ -36,6 +37,15 @@ def main(config: DictConfig):
             config.data.val_batch_size,
             config.data.test_batch_size,
         )
+        num_classes = 100
+    elif config.data.dataset == "food101":
+        train_loader, val_loader, test_loader = prepare_food_101(
+            config.data.val_perc_size,
+            config.data.train_batch_size,
+            config.data.val_batch_size,
+            config.data.test_batch_size,
+        )
+        num_classes = 101
     else:
         raise ValueError("Invalid dataset name")
 
@@ -43,7 +53,7 @@ def main(config: DictConfig):
         image_size=config.model.image_size,
         patch_size=config.model.patch_size,
         in_channels=config.model.in_channels,
-        num_classes=10 if config.data.dataset == "cifar10" else 100,
+        num_classes=num_classes,
         embed_dim=config.model.embed_dim,
         depth=config.model.depth,
         num_heads=config.model.num_heads,

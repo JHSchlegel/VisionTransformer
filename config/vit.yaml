@@ -1,6 +1,6 @@
 data:
   dataset: 'cifar10' # 'cifar10' or 'cifar100'
-  train_batch_size: 128 # batch size for training
+  train_batch_size: 256 # batch size for training
   val_batch_size: 512 # batch size for validation
   test_batch_size: 512 # batch size for testing
   val_perc_size: 0.2 # percentage of training data to use for validation

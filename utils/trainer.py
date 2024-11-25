@@ -105,10 +105,6 @@ class Trainer:
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[
-                logging.FileHandler(f"{save_dir}/training.log"),
-                logging.StreamHandler(),
-            ],
         )
         self.logger = logging.getLogger(__name__)
 
@@ -390,7 +386,7 @@ class Trainer:
                 break
 
             #  regularly save the model and visualize samples
-            if epoch_idx == 0 or (epoch_idx + 1) % self.num_epochs == 0:
+            if epoch_idx == 0 or (epoch_idx + 1) % self.save_every == 0:
                 self._save_checkpoint(epoch_idx)
                 self._visualize_samples(
                     val_loader,

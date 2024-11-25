@@ -1,8 +1,8 @@
 data:
   dataset: 'cifar10' # 'cifar10' or 'cifar100'
-  train_batch_size: 256 # batch size for training
-  val_batch_size: 512 # batch size for validation
-  test_batch_size: 512 # batch size for testing
+  train_batch_size: 512 # batch size for training
+  val_batch_size: 1024 # batch size for validation
+  test_batch_size: 1024 # batch size for testing
   val_perc_size: 0.2 # percentage of training data to use for validation
 
 model:
@@ -10,17 +10,17 @@ model:
   patch_size: 4 # patch size
   in_channels: 3 # number of input channels
   embed_dim: 512 # embedding dimension
-  depth: 3 # number of transformer blocks
+  depth: 4 # number of transformer blocks
   num_heads: 8 # number of heads in multi-head attention
-  mlp_ratio: 4 # hidden layer size = mlp_ratio * embed_dim
-  dropout: 0.1 # dropout rate
+  mlp_ratio: 5 # hidden layer size = mlp_ratio * embed_dim
+  dropout: 0.2 # dropout rate
 
 training:
   num_epochs: 200 # number of training epochs
   use_early_stopping: True # whether to use early stopping
   early_stopping_patience: 20 # patience for early stopping
   early_stopping_tol: 1e-7 # tolerance for early stopping
-  save_model_every: 1 # checkpoint frequency
+  save_model_every: 10 # checkpoint frequency
   use_wandb: True # whether to use Weights & Biases
   wandb_project: 'vit' # Weights & Biases project name
   num_samples: 5 # number of samples to visualize

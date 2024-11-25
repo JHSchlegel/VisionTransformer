@@ -149,16 +149,29 @@ class TransformerBlock(nn.Module):
 class VisionTransformer(nn.Module):
     def __init__(
         self,
-        image_size: int = 40,
-        patch_size: int = 5,
+        image_size: int = 32,
+        patch_size: int = 4,
         in_channels: int = 3,
-        num_classes: int = 6,
+        num_classes: int = 10,
         embed_dim: int = 512,
         depth: int = 5,
         num_heads: int = 8,
         mlp_ratio: int = 4,
         dropout: float = 0.1,
     ) -> None:
+        """Vision Transformer
+
+        Args:
+            image_size (int, optional): Size of the input image. Defaults to 32.
+            patch_size (int, optional): Size of the patch. Defaults to 4.
+            in_channels (int, optional): Number of input channels. Defaults to 3.
+            num_classes (int, optional): Number of classes. Defaults to 10.
+            embed_dim (int, optional): Dimension of the embedding. Defaults to 512.
+            depth (int, optional): Number of transformer blocks. Defaults to 5.
+            num_heads (int, optional): _description_. Defaults to 8.
+            mlp_ratio (int, optional): _description_. Defaults to 4.
+            dropout (float, optional): _description_. Defaults to 0.1.
+        """
         super().__init__()
 
         # Patch Embedding

@@ -3,29 +3,58 @@ import torch.nn as nn
 
 
 class ResNet(nn.Module):
-    def __init__(self):
-        """Initialize layers."""
+    def __init__(
+        self, input_channels=3, num_classes=10, initial_filters=16, block_configs=None
+    ):
+        """
+        Initialize the ResNet with configurable parameters.
+
+        Args:
+            input_channels (int): Number of input channels (e.g., 3 for RGB images).
+            num_classes (int): Number of output classes for classification.
+            initial_filters (int): Number of filters in the first convolutional layer.
+            block_configs (list of tuples): Configuration for each residual block layer.
+                Each tuple should contain (num_blocks, out_channels, stride).
+        """
         super().__init__()
+
+        # Default block configuration if none provided
+        if block_configs is None:
+            block_configs = [
+                (2, 32, 1),
+                (2, 64, 2),
+                (2, 128, 2),
+            ]  # (blocks, out_channels, stride)
+
         self.layer1 = nn.Sequential(
             nn.Conv2d(
-                in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1
+                in_channels=input_channels,
+                out_channels=initial_filters,
+                kernel_size=3,
+                stride=1,
+                padding=1,
             ),
-            nn.BatchNorm2d(16),
+            nn.BatchNorm2d(initial_filters),
             nn.ReLU(inplace=True),
         )
 
-        self.layer2 = self._make_residual_layer(16, 32, 2, 1)
-        self.layer3 = self._make_residual_layer(32, 64, 2, 2)
-        self.layer4 = self._make_residual_layer(64, 128, 2, 2)
+        # Dynamically create residual layers
+        layers = []
+        in_channels = initial_filters
+        for num_blocks, out_channels, stride in block_configs:
+            layers.append(
+                self._make_residual_layer(in_channels, out_channels, num_blocks, stride)
+            )
+            in_channels = out_channels  # Update in_channels for the next layer
 
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc = nn.Linear(3200, 6)
+        self.residual_layers = nn.Sequential(*layers)
+
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive pooling for flexibility
+        self.fc = nn.Linear(in_channels, num_classes)  # Fully connected layer
 
     def forward(self, x):
         x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.residual_layers(x)
         x = self.pool(x)
         x = x.flatten(1)
         x = self.fc(x)

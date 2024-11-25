@@ -128,7 +128,10 @@ class Trainer:
         train_correct = 0
         num_train = 0
 
-        for inputs, targets in train_loader:
+        progress_bar = tqdm.tqdm(
+            enumerate(train_loader), total=len(train_loader), desc="Training"
+        )
+        for _, (inputs, targets) in progress_bar:
             inputs, targets = inputs.to(self.device), targets.to(self.device)
 
             self.optimizer.zero_grad()
@@ -141,6 +144,12 @@ class Trainer:
             preds = outputs.argmax(dim=1)
             num_train += targets.size(0)
             train_correct += torch.sum(preds == targets).item()
+
+            # update progress bar
+            progress_bar.set_postfix(
+                train_loss=f"{train_loss:.4f}",
+                train_accuracy=f"{100.0 * train_correct / num_train:.2f}",
+            )
 
         train_accuracy = 100.0 * train_correct / num_train
         train_loss /= len(train_loader)
@@ -167,7 +176,10 @@ class Trainer:
         val_correct = 0
         num_val = 0
 
-        for inputs, targets in val_loader:
+        progress_bar = tqdm.tqdm(
+            enumerate(val_loader), total=len(val_loader), desc="Validation"
+        )
+        for _, (inputs, targets) in progress_bar:
             inputs, targets = inputs.to(self.device), targets.to(self.device)
             outputs = self.model(inputs)
             loss = self.criterion(outputs, targets)
@@ -176,6 +188,12 @@ class Trainer:
             preds = outputs.argmax(dim=1)
             num_val += targets.size(0)
             val_correct += torch.sum(preds == targets).item()
+
+            # update progress bar
+            progress_bar.set_postfix(
+                val_loss=f"{val_loss:.4f}",
+                val_accuracy=f"{100.0 * val_correct / num_val:.2f}",
+            )
         val_accuracy = 100.0 * val_correct / num_val
         val_loss /= len(val_loader)
 
@@ -348,18 +366,21 @@ class Trainer:
             val_loader (torch.utils.data.DataLoader): Validation data loader.
             num_samples (int, optional): Number of samples to visualize. Defaults to 10.
         """
-        progress_bar = tqdm.tqdm(range(self.num_epochs), desc="Training and Validation")
-        for epoch_idx in progress_bar:
+        for epoch_idx in range(self.num_epochs):
+            # train and validate one epoch
             train_loss, train_accuracy = self.train_epoch(train_loader)
             val_loss, val_accuracy = self.validate_one_epoch(val_loader)
 
+            # log metrics
             self._log_metrics(
                 train_loss, train_accuracy, val_loss, val_accuracy, epoch_idx
             )
 
+            # check whether training shouyld be stopped early
             if self.early_stopping and self._check_early_stopping(val_loss, epoch_idx):
                 break
 
+            #  regularly save the model and visualize samples
             if epoch_idx == 0 or (epoch_idx + 1) % self.num_epochs == 0:
                 self._save_checkpoint(epoch_idx)
                 self._visualize_samples(
@@ -369,23 +390,18 @@ class Trainer:
                     top_k=top_k,
                 )
 
+            # update schedulers if schedulers don't require batch-wise steps
             if not isinstance(
                 self.scheduler, (CosineAnnealingLR, CosineAnnealingWarmRestarts)
             ):
                 self.scheduler.step()
 
-            # update progress bar
-            progress_bar.set_postfix(
-                train_loss=f"{train_loss:.4f}",
-                train_accuracy=f"{train_accuracy:.2f}",
-                val_loss=f"{val_loss:.4f}",
-                val_accuracy=f"{val_accuracy:.2f}",
-            )
-
         self.logger.info("Finished training and validation.")
         self.logger.info(
             f"Best model was saved at epoch {self.best_epoch} with a validation loss of {self.best_val_loss:.4f}."
         )
+
+        # finally, save model with lowest validation loss
         self._save_checkpoint(epoch_idx, best=True)
 
         if self.use_wandb:

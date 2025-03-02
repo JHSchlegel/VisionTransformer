@@ -3,12 +3,10 @@
 # Exit on error
 set -e
 
-cd "$(dirname "$0")/../train"
-
 # Compare ViT and ResNet models
 python ablation.py --model both --dataset cifar10 --epochs 30
 python ablation.py --model both --dataset cifar100 --epochs 30
-python ablation.py --model both --dataset food101 --epochs 30
+python ablation.py --model both --dataset food101 --epochs 30 --batch_size 256
 
 # # Ablation studies for ViT
 python ablation.py --model vit --param model.depth --values 2,4,6,8 --epochs 20

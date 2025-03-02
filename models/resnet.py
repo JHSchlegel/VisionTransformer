@@ -1,7 +1,17 @@
+"""_summary_
+This module contains the implementation of a simple ResNet model for image classification.
+"""
+
+# --------------------------------------------------------------------------- #
+#                           Packages and Presets                              #
+# --------------------------------------------------------------------------- #
 import torch
 import torch.nn as nn
 
 
+# --------------------------------------------------------------------------- #
+#                               ResNet Model                                  #
+# --------------------------------------------------------------------------- #
 class ResNet(nn.Module):
     def __init__(
         self, input_channels=3, num_classes=10, initial_filters=16, block_configs=None
@@ -69,9 +79,22 @@ class ResNet(nn.Module):
             layers.append(ResidualBlock(out_channels, out_channels, 1))
         return nn.Sequential(*layers)
 
+    def extract_features(self, x):
+        """Extract features before the classification layer.
 
-# see: https://stackoverflow.com/questions/55688645/how-downsample-work-in-resnet-in-pytorch-code
-# and https://discuss.pytorch.org/t/downsampling-at-resnet/39038
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Features before classification.
+        """
+        x = self.layer1(x)
+        x = self.residual_layers(x)
+        x = self.pool(x)
+        x = x.flatten(1)
+        return x
+
+
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int, stride: int) -> None:
         super().__init__()

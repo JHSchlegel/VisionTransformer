@@ -1,8 +1,19 @@
+"""
+This module contains the implementation of a Vision Transformer (ViT) model with
+optional support for returning attention maps.
+"""
+
+# --------------------------------------------------------------------------- #
+#                           Packages and Presets                              #
+# --------------------------------------------------------------------------- #
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
+# --------------------------------------------------------------------------- #
+#                             Vision Transformer                              #
+# --------------------------------------------------------------------------- #
 class PatchEmbedding(nn.Module):
     def __init__(
         self,
@@ -136,14 +147,14 @@ class TransformerBlock(nn.Module):
         # Multi-head attention with residual connection:
         identity = x
         if return_attention_map:
-            x, attn_map = self.attn(self.norm1(x), return_attention_map)
-        else:
-            x = self.attn(self.norm1(x))
-        x = x + identity
-        x = x + self.mlp(self.norm2(x))
-        if return_attention_map:
+            x_attn, attn_map = self.attn(self.norm1(x), return_attention_map)
+            x = x_attn + identity
+            x = x + self.mlp(self.norm2(x))
             return x, attn_map
-        return x
+        else:
+            x = self.attn(self.norm1(x)) + identity
+            x = x + self.mlp(self.norm2(x))
+            return x
 
 
 class VisionTransformer(nn.Module):
@@ -168,9 +179,9 @@ class VisionTransformer(nn.Module):
             num_classes (int, optional): Number of classes. Defaults to 10.
             embed_dim (int, optional): Dimension of the embedding. Defaults to 512.
             depth (int, optional): Number of transformer blocks. Defaults to 5.
-            num_heads (int, optional): _description_. Defaults to 8.
-            mlp_ratio (int, optional): _description_. Defaults to 4.
-            dropout (float, optional): _description_. Defaults to 0.1.
+            num_heads (int, optional): Number of attention heads. Defaults to 8.
+            mlp_ratio (int, optional): MLP hidden dimension ratio. Defaults to 4.
+            dropout (float, optional): Dropout rate. Defaults to 0.1.
         """
         super().__init__()
 
@@ -183,8 +194,8 @@ class VisionTransformer(nn.Module):
         )
 
         # Transformer Encoder
-        self.transformer = nn.Sequential(
-            *[
+        self.transformer = nn.ModuleList(
+            [
                 TransformerBlock(
                     embed_dim=embed_dim,
                     num_heads=num_heads,
@@ -202,17 +213,27 @@ class VisionTransformer(nn.Module):
     def forward(
         self, x: torch.Tensor, return_attention_map: bool = False
     ) -> torch.Tensor:
+        """Forward pass of the Vision Transformer.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+            return_attention_map (bool, optional): Whether to return attention maps. Defaults to False.
+
+        Returns:
+            torch.Tensor or Tuple[torch.Tensor, List[torch.Tensor]]: Model output or output and attention maps.
+        """
         # Patch embedding
         x = self.patch_embed(x)
 
         # Transformer blocks
         if return_attention_map:
             attn_weights = []
-            for mod in self.transformer:
-                x, attn_map = mod(x, return_attention_map)
+            for block in self.transformer:
+                x, attn_map = block(x, return_attention_map)
                 attn_weights.append(attn_map)
         else:
-            x = self.transformer(x)
+            for block in self.transformer:
+                x = block(x)
 
         # Classification from [CLS] token
         x = self.norm(x)

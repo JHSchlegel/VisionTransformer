@@ -33,7 +33,3 @@ optimizer:
 scheduler:
   T_0: 10 # number of iterations for the first cycle
   T_mult: 2 # factor by which the cycle length (initially T_0) is increased after each cycle
-
-hydra:
-  run:
-    dir: '../results/vit/${data.dataset}'

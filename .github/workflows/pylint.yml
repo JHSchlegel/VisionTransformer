@@ -1,31 +1,37 @@
-name: Pylint
-
-on: [push]
-
+name: Lint
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Cache pip packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pylint
-        pip install -r requirements.txt
-    - name: Analysing the code with pylint
-      run: |
-        pylint --exit-zero $(git ls-files '*.py')
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements.txt'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black pylint
+          pip install -r requirements.txt
+      - name: Run flake8
+        run: |
+          flake8 $(git ls-files '*.py')
+      - name: Run black
+        if: always()
+        run: |
+          black --check $(git ls-files '*.py')
+      - name: Run pylint
+        if: always()
+        run: |
+          pylint --exit-zero $(git ls-files '*.py')

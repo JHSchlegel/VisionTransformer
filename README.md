@@ -28,6 +28,9 @@ python train.py --config configs/vit_cifar100.yaml
 
 # Train with command-line arguments
 python train.py --model-type vit --dataset cifar100 --num-epochs 100
+
+# Train ResNet and ViT on all datasets
+bash train.sh
 ```
 
 ### 📊 Run Ablation Studies
@@ -38,6 +41,9 @@ python ablation.py --config configs/base_config.yaml --study all
 
 # Compare specific aspects
 python ablation.py --config configs/base_config.yaml --study vit --dataset cifar100
+
+# Perform prepared ablations
+bash ablation.sh
 ```
 
 ## 📁 Project Structure
@@ -47,12 +53,16 @@ python ablation.py --config configs/base_config.yaml --study vit --dataset cifar
 ├── config/                     # Configuration files
 │   ├── resnet.yaml             # ResNet-specific config
 │   └── vit.yaml                # ViT-specific config
-├── models/                     # Model implementations
+├── models/
+│   ├── lightning_module.py     # Pytorch Lightning Trainer
 │   ├── resnet.py               # ResNet implementation
 │   └── vit.py                  # Vision Transformer implementation
-├── utils/                      # Utility modules
+├── utils/                     
 │   ├── data_utils.py           # Dataset processing and loading
-│   ├── plotting_utils.py       # Visualization utilities
+│   └── plotting_utils.py       # Visualization utilities
+├── scripts/                    
+│   ├── train.sh                # Bash script for training 
+│   └── plotting_utils.py       # Bash script for ablations
 ├── train.py                    # Unified training script
 ├── ablation.py                 # Ablation study framework
 ├── requirements.txt            # Package dependencies

@@ -26,7 +26,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run flake8
         run: |
-          flake8 $(git ls-files '*.py')
+          flake8 --max-line-length=100 --ignore=E203,W503 $(git ls-files '*.py')
       - name: Run black
         if: always()
         run: |

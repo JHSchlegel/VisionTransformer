@@ -1,6 +1,6 @@
 # A Simple Vision Transformer Implementation
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)![PyTorch](https://img.shields.io/badge/PyTorch-1.10%2B-orange)![Black](https://img.shields.io/badge/code%20style-black-000000.svg)![License](https://img.shields.io/badge/license-MIT-green)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)![PyTorch](https://img.shields.io/badge/PyTorch-2.01%2B-orange)![Black](https://img.shields.io/badge/code%20style-black-000000.svg)![License](https://img.shields.io/badge/license-MIT-green)
 
 A simple implementation of Vision Transformer (ViT) and ResNet architectures. Allows for easy training and comparison of the two models on CIFAR-10, CIFAR-100, and Food101 datasets, including ablation studies for various hyperparameter configurations.
 

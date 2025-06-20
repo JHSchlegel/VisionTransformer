@@ -4,9 +4,9 @@
 
 A simple implementation of Vision Transformer (ViT) and ResNet architectures. Allows for easy training and comparison of the two models on CIFAR-10, CIFAR-100, and Food101 datasets, including ablation studies for various hyperparameter configurations.
 
-## 🚀 Quick Start
+## Quick Start
 
-### ⚙️ Setup Environment
+### Setup Environment
 
 ```bash
 # Create conda environment
@@ -17,7 +17,7 @@ conda activate vit
 pip install -r requirements.txt
 ```
 
-### 🏃‍♂️ Run Training
+### Run Training
 
 ```bash
 # Train with default config
@@ -33,7 +33,7 @@ python train.py --model-type vit --dataset cifar100 --num-epochs 100
 bash train.sh
 ```
 
-### 📊 Run Ablation Studies
+### Run Ablation Studies
 
 ```bash
 # Run comprehensive comparison
@@ -46,7 +46,7 @@ python ablation.py --config configs/base_config.yaml --study vit --dataset cifar
 bash ablation.sh
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
@@ -69,6 +69,6 @@ bash ablation.sh
 └── README.md                   # This file
 ```
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
